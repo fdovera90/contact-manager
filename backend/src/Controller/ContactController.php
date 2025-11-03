@@ -41,7 +41,8 @@ class ContactController extends AbstractController
         if (count($errors) > 0) {
             $messages = [];
             foreach ($errors as $error) {
-                $messages[] = $error->getMessage();
+                $property = $error->getPropertyPath();
+                $messages[$property][] = $error->getMessage();
             }
             return $this->json(['errors' => $messages], Response::HTTP_BAD_REQUEST);
         }
@@ -100,7 +101,8 @@ class ContactController extends AbstractController
         if (count($errors) > 0) {
             $messages = [];
             foreach ($errors as $error) {
-                $messages[] = $error->getMessage();
+                $property = $error->getPropertyPath();
+                $messages[$property][] = $error->getMessage();
             }
             return $this->json(['errors' => $messages], Response::HTTP_BAD_REQUEST);
         }
