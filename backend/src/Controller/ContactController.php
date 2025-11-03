@@ -50,10 +50,11 @@ class ContactController extends AbstractController
         // Verificar si ya existe un contacto con este email
         $existing = $em->getRepository(Contact::class)->findOneBy(['email' =>$contact->getEmail()]);
         if ($existing) {
-            return $this->json(
-                ['error' => 'A contact with this email already exists'],
-                Response::HTTP_CONFLICT // 409 Conflict
-            );
+            return $this->json([
+                'errors' => [
+                    'message' => ['A contact with this email already exists']
+                ]
+            ], Response::HTTP_CONFLICT);
         }
 
         $em->persist($contact);
@@ -69,15 +70,18 @@ class ContactController extends AbstractController
         $contact = $em->getRepository(Contact::class)->find($id);
 
         if (!$contact) {
-            return $this->json(
-                ['error' => 'Contact not found'],
-                Response::HTTP_NOT_FOUND
-            );
+            return $this->json([
+                'errors' => [
+                    'message' => ['Contact not found']
+                ]
+            ], Response::HTTP_NOT_FOUND);
         }
 
         if (!$contact->isActive()) {
             return $this->json([
-                'error' => 'This contact has been deleted and cannot be updated.'
+                'errors' => [
+                    'message' => ['This contact has been deleted and cannot be updated.']
+                ]
             ], JsonResponse::HTTP_FORBIDDEN);
         }
 
@@ -93,7 +97,11 @@ class ContactController extends AbstractController
         if ($contact->getEmail()) {
             $existing = $em->getRepository(Contact::class)->findOneBy(['email' => $contact->getEmail()]);
             if ($existing && $existing->getId() !== $contact->getId()) {
-                return $this->json(['error' => 'A contact with this email already exists'], Response::HTTP_CONFLICT);
+                return $this->json([
+                    'errors' => [
+                        'message' => ['A contact with this email already exists']
+                    ]
+                ], Response::HTTP_CONFLICT);
             }
         }
 
@@ -120,12 +128,18 @@ class ContactController extends AbstractController
         $contact = $em->getRepository(Contact::class)->find($id);
 
         if (!$contact) {
-            return $this->json(['error' => 'Contact not found'], JsonResponse::HTTP_NOT_FOUND);
+            return $this->json([
+                'errors' => [
+                    'message' => ['Contact not found']
+                ]
+            ], JsonResponse::HTTP_NOT_FOUND);
         }
 
         if (!$contact->isActive()) {
             return $this->json([
-                'error' => 'This contact has already been deleted.'
+                'errors' => [
+                    'message' => ['This contact has already been deleted']
+                ]
             ], JsonResponse::HTTP_FORBIDDEN);
         }
 
