@@ -39,6 +39,10 @@ class Contact
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Length(max: 255, maxMessage: 'Phone cannot exceed 255 characters')]
+    #[Assert\Regex(
+        pattern: '/^\+[1-9]\d{1,14}$/',
+        message: 'The phone number must be in international format (e.g., +56987654321).'
+    )]
     #[Groups(['contact:read', 'contact:write'])]
     private ?string $phone = null;
 
@@ -128,14 +132,6 @@ class Contact
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt?->setTimezone(new \DateTimeZone('America/Santiago'));
-    }
-
-    #[ORM\PrePersist]
-    public function setCreatedAtValue(): void
-    {
-        if ($this->createdAt === null) {
-            $this->createdAt = new DateTimeImmutable();
-        }
     }
 
 
