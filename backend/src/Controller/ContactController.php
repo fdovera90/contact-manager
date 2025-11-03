@@ -29,31 +29,14 @@ class ContactController extends AbstractController
     #[Route('/api/contacts', name: 'create', methods: ['POST'])]
     public function create(Request $request, EntityManagerInterface $em, ValidatorInterface $validator, SerializerInterface $serializer): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
+        $jsonData = $request->getContent();
 
-        // Validar que los datos mínimos existan
-        if (!isset($data['name'], $data['email'])) {
-            return $this->json(
-                ['error' => 'Name and email are required'],
-                Response::HTTP_BAD_REQUEST
-            );
-        }
+        // Deserializar JSON directamente a un Contact
+        $contact = $serializer->deserialize($jsonData, Contact::class, 'json', [
+            AbstractNormalizer::GROUPS => 'contact:write'
+        ]);
 
-        // Verificar si ya existe un contacto con este email
-        $existing = $em->getRepository(Contact::class)->findOneBy(['email' => $data['email']]);
-        if ($existing) {
-            return $this->json(
-                ['error' => 'A contact with this email already exists'],
-                Response::HTTP_CONFLICT // 409 Conflict
-            );
-        }
-
-        $contact = new Contact();
-        $contact->setName($data['name']);
-        $contact->setLastname($data['lastname'] ?? null);
-        $contact->setEmail($data['email']);
-        $contact->setPhone($data['phone'] ?? null);
-
+        
         $errors = $validator->validate($contact);
         if (count($errors) > 0) {
             $messages = [];
@@ -61,6 +44,15 @@ class ContactController extends AbstractController
                 $messages[] = $error->getMessage();
             }
             return $this->json(['errors' => $messages], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Verificar si ya existe un contacto con este email
+        $existing = $em->getRepository(Contact::class)->findOneBy(['email' =>$contact->getEmail()]);
+        if ($existing) {
+            return $this->json(
+                ['error' => 'A contact with this email already exists'],
+                Response::HTTP_CONFLICT // 409 Conflict
+            );
         }
 
         $em->persist($contact);
@@ -88,30 +80,20 @@ class ContactController extends AbstractController
             ], JsonResponse::HTTP_FORBIDDEN);
         }
 
-        $data = json_decode($request->getContent(), true);
+        $jsonData = $request->getContent();
 
-        // Validar y actualizar solo los campos enviados
-        if (isset($data['name'])) {
-            $contact->setName($data['name']);
-        }
+        // Deserializar parcial al Contact existente
+        $serializer->deserialize($jsonData, Contact::class, 'json', [
+            AbstractNormalizer::OBJECT_TO_POPULATE => $contact,
+            AbstractNormalizer::GROUPS => 'contact:write'
+        ]);
 
-        if (isset($data['lastname'])) {
-            $contact->setLastname($data['lastname']);
-        }
-
-        if (isset($data['email'])) {
-            $existing = $em->getRepository(Contact::class)->findOneBy(['email' => $data['email']]);
+        // Validación: email único
+        if ($contact->getEmail()) {
+            $existing = $em->getRepository(Contact::class)->findOneBy(['email' => $contact->getEmail()]);
             if ($existing && $existing->getId() !== $contact->getId()) {
-                return $this->json(
-                    ['error' => 'A contact with this email already exists'],
-                    Response::HTTP_CONFLICT
-                );
+                return $this->json(['error' => 'A contact with this email already exists'], Response::HTTP_CONFLICT);
             }
-            $contact->setEmail($data['email']);
-        }
-
-        if (isset($data['phone'])) {
-            $contact->setPhone($data['phone']);
         }
 
         $errors = $validator->validate($contact);

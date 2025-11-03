@@ -23,23 +23,23 @@ class Contact
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'The name cannot be blank')]
     #[Assert\Length(min: 2, max: 255, minMessage: 'Name must be at least 2 characters', maxMessage: 'Name cannot exceed 255 characters')]
-    #[Groups(['contact:read'])]
+    #[Groups(['contact:read', 'contact:write'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Length(max: 255, maxMessage: 'Lastname cannot exceed 255 characters')]
-    #[Groups(['contact:read'])]
+    #[Groups(['contact:read', 'contact:write'])]
     private ?string $lastname = null;
 
     #[ORM\Column(length: 255, unique: true)]
     #[Assert\NotBlank(message: 'The email cannot be blank')]
     #[Assert\Email(message: 'The email "{{ value }}" is not a valid email.')]
-    #[Groups(['contact:read'])]
+    #[Groups(['contact:read', 'contact:write'])]
     private ?string $email = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Length(max: 255, maxMessage: 'Phone cannot exceed 255 characters')]
-    #[Groups(['contact:read'])]
+    #[Groups(['contact:read', 'contact:write'])]
     private ?string $phone = null;
 
     #[ORM\Column(type: Types::BOOLEAN)]
