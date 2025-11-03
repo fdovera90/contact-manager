@@ -1,0 +1,47 @@
+### Symfony ###
+# App configuration files
+/.env
+/.env.local
+/.env.*.local
+/.env.test
+
+# -------------------
+# Symfony / PHP (backend)
+# -------------------
+/backend/vendor/
+/backend/var/
+/backend/.env
+/backend/.env.local
+/backend/.phpunit.result.cache
+/backend/public/bundles/
+
+# Temporary files
+*.php~
+*.swp
+*.swo
+*.tmp
+*.log
+
+### IDE ###
+# PhpStorm
+.idea/
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+### OS ###
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
