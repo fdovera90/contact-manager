@@ -10,22 +10,24 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use DateTimeImmutable;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use \DateTimeImmutable;
 
 class ContactController extends AbstractController
 {
     #[Route('/api/contacts', name: 'read', methods: ['GET'])]
-    public function list(EntityManagerInterface $em): JsonResponse
+    public function list(EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse
     {
         $contacts = $em->getRepository(Contact::class)->findBy(['active' => true]);
 
-        $data = array_map([$this, 'serializeContact'], $contacts);
+        $data = $serializer->serialize($contacts, 'json', [AbstractNormalizer::GROUPS => 'contact:read']);
 
-        return $this->json($data);
+        return new JsonResponse($data, JsonResponse::HTTP_OK, [], true);
     }
 
     #[Route('/api/contacts', name: 'create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
+    public function create(Request $request, EntityManagerInterface $em, ValidatorInterface $validator, SerializerInterface $serializer): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
@@ -63,18 +65,13 @@ class ContactController extends AbstractController
 
         $em->persist($contact);
         $em->flush();
-
-        return $this->json(
-            [
-                'message' => 'Contact created successfully',
-                'contact' => $this->serializeContact($contact)
-            ],
-            Response::HTTP_CREATED
-        );
+        
+        $data = $serializer->serialize(['message' => 'Contact created successfully', 'contact' => $contact], 'json', [AbstractNormalizer::GROUPS => 'contact:read']);
+        return new JsonResponse($data, JsonResponse::HTTP_CREATED, [], true);
     }
 
     #[Route('/api/contacts/{id}', name: 'update', methods: ['PUT'])]
-    public function update(int $id, Request $request, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
+    public function update(int $id, Request $request, EntityManagerInterface $em, ValidatorInterface $validator, SerializerInterface $serializer): JsonResponse
     {
         $contact = $em->getRepository(Contact::class)->find($id);
 
@@ -129,14 +126,12 @@ class ContactController extends AbstractController
         $contact->setUpdatedAt(new DateTimeImmutable());
         $em->flush();
 
-        return $this->json([
-            'message' => 'Contact updated successfully',
-            'contact' => $this->serializeContact($contact)
-        ]);
+        $data = $serializer->serialize(['message' => 'Contact updated successfully', 'contact' => $contact], 'json', [AbstractNormalizer::GROUPS => 'contact:read']);
+        return new JsonResponse($data, JsonResponse::HTTP_OK, [], true);
     }
 
     #[Route('/api/contacts/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(int $id, EntityManagerInterface $em): JsonResponse
+    public function delete(int $id, EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse
     {
         $contact = $em->getRepository(Contact::class)->find($id);
 
@@ -156,23 +151,7 @@ class ContactController extends AbstractController
 
         $em->flush();
 
-        return $this->json([
-            'message' => 'Contact deleted successfully',
-            'contact' => $this->serializeContact($contact)
-        ]);
-    }
-
-    private function serializeContact(Contact $contact): array
-    {
-        return [
-            'id' => $contact->getId(),
-            'name' => $contact->getName(),
-            'lastname' => $contact->getLastname(),
-            'email' => $contact->getEmail(),
-            'phone' => $contact->getPhone(),
-            'active' => $contact->isActive(),
-            'createdAt' => $contact->getCreatedAt()?->format('Y-m-d H:i:s'),
-            'updatedAt' => $contact->getUpdatedAt()?->format('Y-m-d H:i:s'),
-        ];
+        $data = $serializer->serialize(['message' => 'Contact deleted successfully', 'contact' => $contact], 'json', [AbstractNormalizer::GROUPS => 'contact:read']);
+        return new JsonResponse($data, JsonResponse::HTTP_OK, [], true);
     }
 }
