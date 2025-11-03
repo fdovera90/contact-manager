@@ -22,7 +22,14 @@ class ContactController extends AbstractController
     {
         $contacts = $em->getRepository(Contact::class)->findBy(['active' => true]);
 
-        $data = $serializer->serialize($contacts, 'json', [AbstractNormalizer::GROUPS => 'contact:read']);
+        $data = $serializer->serialize(
+            $contacts,
+            'json',
+            [
+                AbstractNormalizer::GROUPS => ['contact:read'],
+                'datetime_timezone' => 'America/Santiago',
+            ]
+        );
 
         return new JsonResponse($data, JsonResponse::HTTP_OK, [], true);
     }
@@ -35,7 +42,7 @@ class ContactController extends AbstractController
         // Deserializar JSON directamente a un Contact
         try {
             $contact = $serializer->deserialize($jsonData, Contact::class, 'json', [
-                AbstractNormalizer::GROUPS => 'contact:write',
+                AbstractNormalizer::GROUPS => ['contact:write'],
                 AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => false,
             ]);
         } catch (ExtraAttributesException $e) {
@@ -70,7 +77,14 @@ class ContactController extends AbstractController
         $em->persist($contact);
         $em->flush();
         
-        $data = $serializer->serialize(['message' => 'Contact created successfully', 'contact' => $contact], 'json', [AbstractNormalizer::GROUPS => 'contact:read']);
+        $data = $serializer->serialize(
+            ['message' => 'Contact created successfully', 'contact' => $contact],
+            'json',
+            [
+                AbstractNormalizer::GROUPS => ['contact:read'],
+                'datetime_timezone' => 'America/Santiago',
+            ]
+        );
         return new JsonResponse($data, JsonResponse::HTTP_CREATED, [], true);
     }
 
@@ -101,7 +115,7 @@ class ContactController extends AbstractController
         try {
             $contact = $serializer->deserialize($jsonData, Contact::class, 'json', [
                 AbstractNormalizer::OBJECT_TO_POPULATE => $contact,
-                AbstractNormalizer::GROUPS => 'contact:write',
+                AbstractNormalizer::GROUPS => ['contact:write'],
                 AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => false,
             ]);
         } catch (ExtraAttributesException $e) {
@@ -137,7 +151,14 @@ class ContactController extends AbstractController
         $contact->setUpdatedAt(new DateTimeImmutable());
         $em->flush();
 
-        $data = $serializer->serialize(['message' => 'Contact updated successfully', 'contact' => $contact], 'json', [AbstractNormalizer::GROUPS => 'contact:read']);
+        $data = $serializer->serialize(
+            ['message' => 'Contact updated successfully', 'contact' => $contact],
+            'json',
+            [
+                AbstractNormalizer::GROUPS => ['contact:read'],
+                'datetime_timezone' => 'America/Santiago',
+            ]
+        );
         return new JsonResponse($data, JsonResponse::HTTP_OK, [], true);
     }
 
@@ -168,7 +189,14 @@ class ContactController extends AbstractController
 
         $em->flush();
 
-        $data = $serializer->serialize(['message' => 'Contact deleted successfully', 'contact' => $contact], 'json', [AbstractNormalizer::GROUPS => 'contact:read']);
+        $data = $serializer->serialize(
+            ['message' => 'Contact deleted successfully', 'contact' => $contact],
+            'json',
+            [
+                AbstractNormalizer::GROUPS => ['contact:read'],
+                'datetime_timezone' => 'America/Santiago',
+            ]
+        );
         return new JsonResponse($data, JsonResponse::HTTP_OK, [], true);
     }
 }

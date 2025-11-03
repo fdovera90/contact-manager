@@ -131,13 +131,13 @@ class Contact
 
     public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->createdAt?->setTimezone(new \DateTimeZone('America/Santiago'));
+        return $this->createdAt;
     }
 
 
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
-        return $this->updatedAt?->setTimezone(new \DateTimeZone('America/Santiago'));
+        return $this->updatedAt;
     }
 
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
