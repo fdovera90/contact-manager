@@ -12,6 +12,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Exception\ExtraAttributesException;
 use \DateTimeImmutable;
 
 class ContactController extends AbstractController
@@ -32,9 +33,18 @@ class ContactController extends AbstractController
         $jsonData = $request->getContent();
 
         // Deserializar JSON directamente a un Contact
-        $contact = $serializer->deserialize($jsonData, Contact::class, 'json', [
-            AbstractNormalizer::GROUPS => 'contact:write'
-        ]);
+        try {
+            $contact = $serializer->deserialize($jsonData, Contact::class, 'json', [
+                AbstractNormalizer::GROUPS => 'contact:write',
+                AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => false,
+            ]);
+        } catch (ExtraAttributesException $e) {
+            return $this->json([
+                'errors' => [
+                    'message' => [$e->getMessage()]
+                ]
+            ], Response::HTTP_BAD_REQUEST);
+        }
 
         
         $errors = $validator->validate($contact);
@@ -87,11 +97,20 @@ class ContactController extends AbstractController
 
         $jsonData = $request->getContent();
 
-        // Deserializar parcial al Contact existente
-        $serializer->deserialize($jsonData, Contact::class, 'json', [
-            AbstractNormalizer::OBJECT_TO_POPULATE => $contact,
-            AbstractNormalizer::GROUPS => 'contact:write'
-        ]);
+        // Deserializar JSON directamente a un Contact
+        try {
+            $contact = $serializer->deserialize($jsonData, Contact::class, 'json', [
+                AbstractNormalizer::OBJECT_TO_POPULATE => $contact,
+                AbstractNormalizer::GROUPS => 'contact:write',
+                AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => false,
+            ]);
+        } catch (ExtraAttributesException $e) {
+            return $this->json([
+                'errors' => [
+                    'message' => [$e->getMessage()]
+                ]
+            ], Response::HTTP_BAD_REQUEST);
+        }
 
         // Validación: email único
         if ($contact->getEmail()) {
