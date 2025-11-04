@@ -26,12 +26,16 @@ export default function HomePage() {
     setContacts([...contacts, newContact]);
   };
 
+  const handleContactDeleted = (contactDeletedId) => {
+    setContacts(prevContacts => prevContacts.filter(c => c.id !== contactDeletedId));
+  }
+
   if (loading) return <p className="text-center mt-5">Loading...</p>;
 
   return (
     <div className="container mt-5">
       <h1 className="mb-4">Listado de contactos</h1>
-      <ContactTable contacts={contacts} />
+      <ContactTable contacts={contacts} onContactDeleted={handleContactDeleted} />
       <AddContactForm onContactAdded={handleContactAdded} />
     </div>
   );
