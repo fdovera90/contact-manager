@@ -12,17 +12,15 @@ const showToast = async (icon, title) => {
     Toast.fire({ icon, title });
 };
 
-export default function ContactRow({ contact, onContactDeleted }) {
+export default function ContactRow({ contact, onContactEdited, onContactDeleted }) {
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     const handleEdit = () => {
-        console.log("Edit contact:", contact);
-        alert(`Edit contact ${contact.name} - ${contact.email}`);
+        onContactEdited(contact);
     };
 
     const handleDelete = async () => {
-        console.log("Delete contact:", contact);
         const result = await Swal.fire({
             title: "Eliminar",
             text: `¿Estás seguro de eliminar a ${contact.name}?`,

@@ -1,6 +1,6 @@
 import ContactRow from "./ContactRow";
 
-export default function ContactTable({ contacts, onContactDeleted }) {
+export default function ContactTable({ contacts, onContactEdited, onContactDeleted }) {
     return (
         <table className="table table-striped table-bordered">
             <thead className="table-dark">
@@ -22,7 +22,7 @@ export default function ContactTable({ contacts, onContactDeleted }) {
                     </tr>
                 ) : (
                     contacts.map(contact => (
-                        <ContactRow key={contact.id} contact={contact} onContactDeleted={onContactDeleted} />
+                        <ContactRow key={contact.id} contact={contact} onContactEdited={onContactEdited} onContactDeleted={onContactDeleted} />
                     ))
                 )}
             </tbody>
