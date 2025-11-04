@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import ContactTable from "./contacts/ContactTable";
 import EditContactModal from "./contacts/EditContactModal"; 
 import AddContactForm from "./contacts/AddContactForm";
+import SearchBar from "./contacts/SearchBar";
 
 export default function HomePage() {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [contactToEdit, setContactToEdit] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch al backend
   useEffect(() => {
@@ -26,10 +28,12 @@ export default function HomePage() {
 
   const handleContactAdded = (newContact) => {
     setContacts(prevContacts => [...prevContacts, newContact]);
+    resetSearchTerm();
   };
 
   const handleContactDeleted = (contactDeletedId) => {
     setContacts(prevContacts => prevContacts.filter(c => c.id !== contactDeletedId));
+    resetSearchTerm();
   }
 
   const handleContactEdit = (contactEditId) => {
@@ -48,6 +52,23 @@ export default function HomePage() {
       )
     );
     handleEditClose(); // Cierra la modal
+    resetSearchTerm();
+  };
+
+  const filteredContacts = contacts.filter(contact => {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    // Concatena Nombre, Apellido y Email para buscar
+    const searchableText = `${contact.name} ${contact.lastname} ${contact.email}`.toLowerCase();
+    return searchableText.includes(lowerCaseSearchTerm);
+  });
+  
+  // Manejador del cambio en la caja de texto
+  const handleSearchChange = (e) => {
+      setSearchTerm(e.target.value);
+  }
+
+  const resetSearchTerm = () => {
+    setSearchTerm('');
   };
 
   if (loading) return <p className="text-center mt-5">Loading...</p>;
@@ -55,7 +76,8 @@ export default function HomePage() {
   return (
     <div className="container mt-5">
       <h1 className="mb-4">Listado de contactos</h1>
-      <ContactTable contacts={contacts} onContactDeleted={handleContactDeleted} onContactEdited={handleContactEdit} />
+      <SearchBar searchTerm={searchTerm} onSearchChange={handleSearchChange} />
+      <ContactTable contacts={filteredContacts} onContactDeleted={handleContactDeleted} onContactEdited={handleContactEdit} />
       <AddContactForm onContactAdded={handleContactAdded} />
 
       {contactToEdit && (

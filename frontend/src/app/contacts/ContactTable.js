@@ -17,7 +17,7 @@ export default function ContactTable({ contacts, onContactEdited, onContactDelet
                 {contacts.length === 0 ? (
                     <tr>
                         <td colSpan="6" className="text-center">
-                            No contacts found
+                            No se encontraron contactos
                         </td>
                     </tr>
                 ) : (
