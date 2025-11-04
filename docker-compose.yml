@@ -1,0 +1,85 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: contact_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-contacts}
+      MYSQL_USER: ${MYSQL_USER:-app}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-app}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    image: php:8.3-cli
+    container_name: contact_backend
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+      - ./.env:/root/.env:ro
+    environment:
+      # Symfony
+      APP_ENV: ${APP_ENV:-dev}
+      APP_DEBUG: ${APP_DEBUG:-1}
+      # CORS for frontend
+      CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN:-http://localhost:3000}
+      # Doctrine connection to mysql service
+      DATABASE_URL: ${DATABASE_URL:-mysql://app:app@mysql:3306/contacts?serverVersion=8.0&charset=utf8mb4}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-8080}:8000"
+    command: |
+      sh -c "
+        # Copiar .env de la raíz al backend (si existe) sin BOM
+        if [ -f /root/.env ]; then
+          # Remover BOM usando awk (más confiable)
+          awk 'NR==1{sub(/^\xef\xbb\xbf/,"")}1' /root/.env > /app/.env || cp /root/.env /app/.env || true
+        fi
+        # Instalar extensiones PHP necesarias
+        docker-php-ext-install pdo_mysql > /dev/null 2>&1 || true
+        # Instalar dependencias si no existen
+        if [ ! -d vendor ]; then
+          apt-get update -qq && apt-get install -y -qq git unzip > /dev/null 2>&1
+          curl -sS https://getcomposer.org/installer | php -- --quiet
+          php composer.phar install --no-interaction --prefer-dist --optimize-autoloader
+        fi
+        # Establecer permisos para var/
+        chmod -R 777 var || true
+        # Ejecutar migraciones
+        php bin/console doctrine:migrations:migrate --no-interaction || true
+        # Limpiar caché
+        php bin/console cache:clear || true
+        # Iniciar servidor de desarrollo de Symfony
+        php -S 0.0.0.0:8000 -t public public/index.php
+      "
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080/api/contacts}
+    container_name: contact_frontend
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # Also pass for runtime (SSR) just in case
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080/api/contacts}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
+
+
