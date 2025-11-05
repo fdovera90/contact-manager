@@ -13,6 +13,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Exception\ExtraAttributesException;
+use libphonenumber\PhoneNumberUtil;
+use libphonenumber\NumberParseException;
 use \DateTimeImmutable;
 
 class ContactController extends AbstractController
@@ -53,6 +55,10 @@ class ContactController extends AbstractController
             ], Response::HTTP_BAD_REQUEST);
         }
 
+        $phoneValidationError = $this->validatePhoneNumber($contact->getPhone());
+        if ($phoneValidationError) {
+            return $phoneValidationError;
+        }
         
         $errors = $validator->validate($contact);
         if (count($errors) > 0) {
@@ -126,13 +132,18 @@ class ContactController extends AbstractController
             ], Response::HTTP_BAD_REQUEST);
         }
 
+        $phoneValidationError = $this->validatePhoneNumber($contact->getPhone());
+        if ($phoneValidationError) {
+            return $phoneValidationError;
+        }
+
         // Validación: email único
         if ($contact->getEmail()) {
             $existing = $em->getRepository(Contact::class)->findOneBy(['email' => $contact->getEmail()]);
             if ($existing && $existing->getId() !== $contact->getId()) {
                 return $this->json([
                     'errors' => [
-                        'message' => ['A contact with this email already exists']
+                        'message' => ['Ya existe un contacto con este email']
                     ]
                 ], Response::HTTP_CONFLICT);
             }
@@ -170,7 +181,7 @@ class ContactController extends AbstractController
         if (!$contact) {
             return $this->json([
                 'errors' => [
-                    'message' => ['Contact not found']
+                    'message' => ['Contacto no encontrado']
                 ]
             ], JsonResponse::HTTP_NOT_FOUND);
         }
@@ -198,5 +209,32 @@ class ContactController extends AbstractController
             ]
         );
         return new JsonResponse($data, JsonResponse::HTTP_OK, [], true);
+    }
+
+    private function validatePhoneNumber(?string $phone): ?JsonResponse
+    {
+        if (!$phone || trim($phone) === '') {
+            return null;
+        }
+
+        $phoneUtil = PhoneNumberUtil::getInstance();
+        try {
+            $phoneNumber = $phoneUtil->parse($phone, null);
+            if (!$phoneUtil->isValidNumber($phoneNumber)) {
+                return $this->json([
+                    'errors' => [
+                        'phone' => ['El número de teléfono no es válido. Debe estar en formato internacional (ejemplo: +56912345678).']
+                    ]
+                ], Response::HTTP_BAD_REQUEST);
+            }
+        } catch (NumberParseException $e) {
+            return $this->json([
+                'errors' => [
+                    'phone' => ['El número de teléfono no es válido. Debe estar en formato internacional (ejemplo: +56912345678).']
+                ]
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        return null; // Número válido
     }
 }

@@ -45,11 +45,14 @@ services:
           # Remover BOM usando awk (más confiable)
           awk 'NR==1{sub(/^\xef\xbb\xbf/,"")}1' /root/.env > /app/.env || cp /root/.env /app/.env || true
         fi
-        # Instalar extensiones PHP necesarias
-        docker-php-ext-install pdo_mysql > /dev/null 2>&1 || true
+        # Instalar extensiones PHP necesarias (pdo_mysql e intl para libphonenumber)
+        apt-get update -qq > /dev/null 2>&1 && apt-get install -y -qq libicu-dev > /dev/null 2>&1 || true
+        docker-php-ext-install pdo_mysql intl > /dev/null 2>&1 || true
+        # Instalar dependencias del sistema necesarias (git y unzip para composer)
+        apt-get update -qq > /dev/null 2>&1 && apt-get install -y -qq git unzip > /dev/null 2>&1 || true
         # Instalar dependencias si no existen
         if [ ! -d vendor ]; then
-          apt-get update -qq && apt-get install -y -qq git unzip default-mysql-client > /dev/null 2>&1
+          apt-get update -qq && apt-get install -y -qq default-mysql-client > /dev/null 2>&1
           curl -sS https://getcomposer.org/installer | php -- --quiet
           php composer.phar install --no-interaction --prefer-dist --optimize-autoloader
         fi
