@@ -21,16 +21,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Assert\NotBlank(message: 'The username cannot be blank')]
-    #[Assert\Length(min: 3, max: 180, minMessage: 'Username must be at least 3 characters', maxMessage: 'Username cannot exceed 180 characters')]
+    #[Assert\NotBlank(message: 'El nombre de usuario no puede estar vacío')]
+    #[Assert\Length(min: 3, max: 180, minMessage: 'El nombre de usuario debe tener al menos 3 caracteres', maxMessage: 'El nombre de usuario no puede exceder 180 caracteres')]
     private ?string $username = null;
 
     #[ORM\Column]
     private array $roles = [];
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: 'The password cannot be blank')]
-    #[Assert\Length(min: 6, max: 255, minMessage: 'Password must be at least 6 characters', maxMessage: 'Password cannot exceed 255 characters')]
+    #[Assert\NotBlank(message: 'La contraseña no puede estar vacía')]
+    #[Assert\Length(min: 6, max: 255, minMessage: 'La contraseña debe tener al menos 6 caracteres', maxMessage: 'La contraseña no puede exceder 255 caracteres')]
     private ?string $password = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]

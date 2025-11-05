@@ -25,7 +25,7 @@ class AuthController extends AbstractController
         if (!isset($data['username']) || !isset($data['password'])) {
             return $this->json([
                 'success' => false,
-                'message' => 'Username and password are required'
+                'message' => 'Usuario y contraseña son requeridos'
             ], Response::HTTP_BAD_REQUEST);
         }
 
@@ -35,7 +35,7 @@ class AuthController extends AbstractController
         if (!$username || !$password) {
             return $this->json([
                 'success' => false,
-                'message' => 'Username and password are required',
+                'message' => 'Usuario y contraseña son requeridos',
                 'debug' => [
                     'received_username' => $username !== null,
                     'received_password' => $password !== null,
@@ -50,8 +50,8 @@ class AuthController extends AbstractController
         if (!$user) {
             return $this->json([
                 'success' => false,
-                'message' => 'Invalid credentials',
-                'debug' => 'User not found'
+                'message' => 'Credenciales inválidas',
+                'debug' => 'Usuario no encontrado'
             ], Response::HTTP_UNAUTHORIZED);
         }
 
@@ -75,7 +75,7 @@ class AuthController extends AbstractController
             
             return $this->json([
                 'success' => false,
-                'message' => 'Invalid credentials',
+                'message' => 'Credenciales inválidas',
                 'debug' => [
                     'password_validation_failed' => true,
                     'password_length' => strlen($password),
@@ -92,7 +92,7 @@ class AuthController extends AbstractController
         $token = base64_encode($username . ':' . time());
         return $this->json([
             'success' => true,
-            'message' => 'Login successful',
+            'message' => 'Login exitoso',
             'token' => $token,
             'user' => [
                 'id' => $user->getId(),
@@ -107,7 +107,7 @@ class AuthController extends AbstractController
     {
         return $this->json([
             'success' => true,
-            'message' => 'Logout successful'
+            'message' => 'Logout exitoso'
         ], Response::HTTP_OK);
     }
 }

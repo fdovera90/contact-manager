@@ -69,7 +69,7 @@ class ContactController extends AbstractController
         if ($existing) {
             return $this->json([
                 'errors' => [
-                    'message' => ['A contact with this email already exists']
+                    'message' => ['Ya existe un contacto con este email']
                 ]
             ], Response::HTTP_CONFLICT);
         }
@@ -78,7 +78,7 @@ class ContactController extends AbstractController
         $em->flush();
         
         $data = $serializer->serialize(
-            ['message' => 'Contact created successfully', 'contact' => $contact],
+            ['message' => 'Contacto creado exitosamente', 'contact' => $contact],
             'json',
             [
                 AbstractNormalizer::GROUPS => ['contact:read'],
@@ -96,7 +96,7 @@ class ContactController extends AbstractController
         if (!$contact) {
             return $this->json([
                 'errors' => [
-                    'message' => ['Contact not found']
+                    'message' => ['Contacto no encontrado']
                 ]
             ], Response::HTTP_NOT_FOUND);
         }
@@ -104,7 +104,7 @@ class ContactController extends AbstractController
         if (!$contact->isActive()) {
             return $this->json([
                 'errors' => [
-                    'message' => ['This contact has been deleted and cannot be updated.']
+                    'message' => ['Este contacto ha sido eliminado y no puede ser actualizado.']
                 ]
             ], JsonResponse::HTTP_FORBIDDEN);
         }
@@ -152,7 +152,7 @@ class ContactController extends AbstractController
         $em->flush();
 
         $data = $serializer->serialize(
-            ['message' => 'Contact updated successfully', 'contact' => $contact],
+            ['message' => 'Contacto actualizado exitosamente', 'contact' => $contact],
             'json',
             [
                 AbstractNormalizer::GROUPS => ['contact:read'],
@@ -178,7 +178,7 @@ class ContactController extends AbstractController
         if (!$contact->isActive()) {
             return $this->json([
                 'errors' => [
-                    'message' => ['This contact has already been deleted']
+                    'message' => ['Este contacto ya ha sido eliminado']
                 ]
             ], JsonResponse::HTTP_FORBIDDEN);
         }
@@ -190,7 +190,7 @@ class ContactController extends AbstractController
         $em->flush();
 
         $data = $serializer->serialize(
-            ['message' => 'Contact deleted successfully', 'contact' => $contact],
+            ['message' => 'Contacto eliminado exitosamente', 'contact' => $contact],
             'json',
             [
                 AbstractNormalizer::GROUPS => ['contact:read'],

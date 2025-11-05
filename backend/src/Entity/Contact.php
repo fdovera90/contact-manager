@@ -21,27 +21,27 @@ class Contact
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: 'The name cannot be blank')]
-    #[Assert\Length(min: 2, max: 255, minMessage: 'Name must be at least 2 characters', maxMessage: 'Name cannot exceed 255 characters')]
+    #[Assert\NotBlank(message: 'El Nombre no puede estar vacío')]
+    #[Assert\Length(min: 2, max: 255, minMessage: 'El Nombre debe tener al menos 2 caracteres', maxMessage: 'El nombre no puede exceder 255 caracteres')]
     #[Groups(['contact:read', 'contact:write'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\Length(max: 255, maxMessage: 'Lastname cannot exceed 255 characters')]
+    #[Assert\Length(max: 255, maxMessage: 'El Apellido no puede exceder 255 caracteres')]
     #[Groups(['contact:read', 'contact:write'])]
     private ?string $lastname = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Assert\NotBlank(message: 'The email cannot be blank')]
-    #[Assert\Email(message: 'The email "{{ value }}" is not a valid email.')]
+    #[Assert\NotBlank(message: 'El Email no puede estar vacío')]
+    #[Assert\Email(message: 'El Email "{{ value }}" no es un email válido.')]
     #[Groups(['contact:read', 'contact:write'])]
     private ?string $email = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\Length(max: 255, maxMessage: 'Phone cannot exceed 255 characters')]
+    #[Assert\Length(max: 255, maxMessage: 'El Teléfono no puede exceder 255 caracteres')]
     #[Assert\Regex(
         pattern: '/^\+[1-9]\d{1,14}$/',
-        message: 'The phone number must be in international format (e.g., +56987654321).'
+        message: 'El número de teléfono debe estar en formato internacional (ejemplo: +56987654321).'
     )]
     #[Groups(['contact:read', 'contact:write'])]
     private ?string $phone = null;
