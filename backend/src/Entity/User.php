@@ -102,6 +102,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials(): void
+    {
+        // Si almacenaras credenciales temporales en memoria, las limpiarías aquí
+        // En este caso, no hay nada que limpiar ya que la contraseña está hasheada
+    }
+
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
