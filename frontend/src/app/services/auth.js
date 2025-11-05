@@ -27,11 +27,11 @@ export const authService = {
         return { success: true, data };
       } else {
         console.error('Login failed:', data);
-        return { success: false, message: data.message || 'Login failed', debug: data.debug };
+        return { success: false, message: data.message || 'Error al iniciar sesión', debug: data.debug };
       }
     } catch (error) {
       console.error('Login error:', error);
-      return { success: false, message: 'Network error. Please try again.', error: error.message };
+      return { success: false, message: 'Error de red. Por favor, intenta nuevamente.', error: error.message };
     }
   },
 
