@@ -24,6 +24,7 @@ services:
     volumes:
       - ./backend:/app
       - ./.env:/root/.env:ro
+      - ./docker/init-users.sql:/docker-entrypoint-initdb.d/init-users.sql:ro
     environment:
       # Symfony
       APP_ENV: ${APP_ENV:-dev}
@@ -48,16 +49,29 @@ services:
         docker-php-ext-install pdo_mysql > /dev/null 2>&1 || true
         # Instalar dependencias si no existen
         if [ ! -d vendor ]; then
-          apt-get update -qq && apt-get install -y -qq git unzip > /dev/null 2>&1
+          apt-get update -qq && apt-get install -y -qq git unzip default-mysql-client > /dev/null 2>&1
           curl -sS https://getcomposer.org/installer | php -- --quiet
           php composer.phar install --no-interaction --prefer-dist --optimize-autoloader
         fi
+        # Asegurar que mysql-client esté instalado (siempre ejecutar para garantizar disponibilidad)
+        apt-get update -qq > /dev/null 2>&1 && apt-get install -y -qq default-mysql-client > /dev/null 2>&1 || true
         # Establecer permisos para var/
         chmod -R 777 var || true
         # Ejecutar migraciones
         php bin/console doctrine:migrations:migrate --no-interaction || true
         # Limpiar caché
         php bin/console cache:clear || true
+        # Inicializar usuarios si no existen (después de las migraciones)
+        if [ -f /docker-entrypoint-initdb.d/init-users.sql ]; then
+          echo 'Verificando si hay usuarios...'
+          CNT=$$(mysql -h mysql -u app -papp --skip-ssl contacts -e 'SELECT COUNT(*) FROM app_user' 2>/dev/null | tail -n 1 || echo '0')
+          if [ \"$${CNT}\" = \"0\" ] || [ \"$${CNT}\" = \"\" ]; then
+            echo 'Inicializando usuarios...'
+            mysql -h mysql -u app -papp --skip-ssl contacts < /docker-entrypoint-initdb.d/init-users.sql 2>/dev/null && echo 'Usuarios inicializados correctamente' || echo 'Error al inicializar usuarios'
+          else
+            echo \"Ya existen $${CNT} usuarios\"
+          fi
+        fi
         # Iniciar servidor de desarrollo de Symfony
         php -S 0.0.0.0:8000 -t public public/index.php
       "
