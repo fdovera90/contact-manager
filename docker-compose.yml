@@ -42,8 +42,8 @@ services:
       sh -c "
         # Copiar .env de la raíz al backend (si existe) sin BOM
         if [ -f /root/.env ]; then
-          # Remover BOM usando awk (más confiable)
-          awk 'NR==1{sub(/^\xef\xbb\xbf/,"")}1' /root/.env > /app/.env || cp /root/.env /app/.env || true
+          # Remover BOM usando sed
+          sed '1s/^\\xef\\xbb\\xbf//' /root/.env > /app/.env 2>/dev/null || cp /root/.env /app/.env || true
         fi
         # Instalar extensiones PHP necesarias (pdo_mysql e intl para libphonenumber)
         apt-get update -qq > /dev/null 2>&1 && apt-get install -y -qq libicu-dev > /dev/null 2>&1 || true
