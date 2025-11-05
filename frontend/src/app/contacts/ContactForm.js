@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import Swal from 'sweetalert2';
+import { isValidPhoneNumber } from 'libphonenumber-js';
 
-const E164_REGEX = /^\+?[1-9]\d{1,14}$/; 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -134,7 +134,7 @@ export default function ContactForm({ contactToEdit = null, onSuccess = () => {}
 
                 {/* --------------------- 2. LASTNAME (Apellido) --------------------- */}
                 <div className="col-md-6">
-                    <label htmlFor="lastname" className="form-label">Apellido (Opcional)</label>
+                    <label htmlFor="lastname" className="form-label">Apellido </label>
                     <input
                         type="text"
                         className="form-control"
@@ -171,14 +171,19 @@ export default function ContactForm({ contactToEdit = null, onSuccess = () => {}
 
                 {/* --------------------- 4. PHONE (Teléfono) --------------------- */}
                 <div className="col-md-6">
-                    <label htmlFor="phone" className="form-label">Teléfono (E.164)</label>
+                    <label htmlFor="phone" className="form-label">Teléfono </label>
                     <input
                         type="text"
                         className={`form-control ${errors.phone ? 'is-invalid' : ''}`}
                         id="phone"
                         placeholder="+56912345678"
                         {...register("phone", {
-                            validate: value => !value || E164_REGEX.test(value) || "El Teléfono debe ser formato internacional E.164.",
+                            validate: value => {
+                                if (!value || value.trim() === '') {
+                                    return true;
+                                }
+                                return isValidPhoneNumber(value) || "El número de teléfono no es válido. Debe estar en formato internacional (ejemplo: +56912345678).";
+                            },
                             maxLength: { value: 255, message: "El teléfono no puede exceder los 255 caracteres." }
                         })}
                     />
