@@ -12,7 +12,7 @@ const showToast = async (icon, title) => {
     Toast.fire({ icon, title });
 };
 
-export default function ContactRow({ contact, onContactEdited, onContactDeleted }) {
+export default function ContactRow({ contact, onContactEdited, onContactDeleted, canEdit = false, canDelete = false }) {
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -44,6 +44,8 @@ export default function ContactRow({ contact, onContactEdited, onContactDeleted 
         }
     };
 
+    const hasActions = canEdit || canDelete;
+
     return (
         <tr>
             <td>{contact.id}</td>
@@ -51,18 +53,26 @@ export default function ContactRow({ contact, onContactEdited, onContactDeleted 
             <td>{contact.lastname}</td>
             <td>{contact.email}</td>
             <td>{contact.phone}</td>
-            <td>
-                <i
-                    className="bi bi-pencil-fill text-primary me-2"
-                    style={{ cursor: "pointer" }}
-                    onClick={handleEdit}
-                ></i>
-                <i
-                    className="bi bi-trash-fill text-danger"
-                    style={{ cursor: "pointer" }}
-                    onClick={handleDelete}
-                ></i>
-            </td>
+            {hasActions && (
+                <td>
+                    {canEdit && (
+                        <i
+                            className="bi bi-pencil-fill text-primary me-2"
+                            style={{ cursor: "pointer" }}
+                            onClick={handleEdit}
+                            title="Editar"
+                        ></i>
+                    )}
+                    {canDelete && (
+                        <i
+                            className="bi bi-trash-fill text-danger"
+                            style={{ cursor: "pointer" }}
+                            onClick={handleDelete}
+                            title="Eliminar"
+                        ></i>
+                    )}
+                </td>
+            )}
         </tr>
     );
 }
